@@ -1,6 +1,6 @@
 package com.tourguide.UserMicroservice.services;
 
-import com.tourguide.UserMicroservice.dto.Attraction;
+import com.tourguide.UserMicroservice.dto.ClosestsAttractionsDTO;
 import com.tourguide.UserMicroservice.dto.User;
 import com.tourguide.UserMicroservice.helper.InternalTestHelper;
 import gpsUtil.location.Location;
@@ -27,16 +27,17 @@ public class UserService {
         initializeInternalUsers();
     }
 
-    public List<Attraction> getClosestAttractions(String userName) {
-        try{
-            Location userLocation = getUserLocation(getUser(userName)).location;
-            return consumerService.getAttractions().parallelStream()
-                    .sorted(Comparator.comparingDouble(a -> getDistance(userLocation, new Location(a.getLatitude(), a.getLongitude()))))
-                    .limit(5).collect(Collectors.toList());
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        return null;
+    public ClosestsAttractionsDTO getClosestAttractionsDTO(String userName) {
+        Location userLocation = getUserLocation(getUser(userName)).location;
+        ClosestsAttractionsDTO closestsAttractionsDTO = new ClosestsAttractionsDTO();
+
+        closestsAttractionsDTO.setAttractionDTOList(consumerService.getAttractions().stream()
+                .sorted(Comparator.comparingDouble(a -> getDistance(userLocation, new Location(a.getLatitude(), a.getLongitude()))))
+                .limit(5).collect(Collectors.toList()));
+        closestsAttractionsDTO.getAttractionDTOList().parallelStream().forEach(attractionDTO -> attractionDTO.setDistance(getDistance(userLocation, new Location(attractionDTO.getLatitude(), attractionDTO.getLongitude()))));
+        closestsAttractionsDTO.setUserPosition(consumerService.getUserLocation(getUser(userName)));
+
+        return closestsAttractionsDTO;
     }
 
     public VisitedLocation getUserLocation(User user) {
@@ -104,5 +105,6 @@ public class UserService {
         LocalDateTime localDateTime = LocalDateTime.now().minusDays(new Random().nextInt(30));
         return Date.from(localDateTime.toInstant(ZoneOffset.UTC));
     }
+
 
 }

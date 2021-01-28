@@ -2,15 +2,33 @@ package com.tourguide.UserMicroservice.dto;
 
 import java.util.UUID;
 
-public class Attraction {
+public class AttractionDTO {
     private String attractionName;
     private String city;
     private String state;
     private UUID attractionId;
     private double longitude;
     private double latitude;
+    private double distance;
+    private double rewards;
 
-    public Attraction(){ }
+    public AttractionDTO(){ }
+
+    public double getDistance() {
+        return distance;
+    }
+
+    public void setDistance(double distance) {
+        this.distance = distance;
+    }
+
+    public double getRewards() {
+        return rewards;
+    }
+
+    public void setRewards(double rewards) {
+        this.rewards = rewards;
+    }
 
     public String getAttractionName() {
         return attractionName;
