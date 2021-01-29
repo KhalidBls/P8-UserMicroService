@@ -1,10 +1,7 @@
 package com.tourguide.UserMicroservice.services;
 
-import com.tourguide.UserMicroservice.dto.ClosestsAttractionsDTO;
-import com.tourguide.UserMicroservice.dto.User;
+import com.tourguide.UserMicroservice.dto.*;
 import com.tourguide.UserMicroservice.helper.InternalTestHelper;
-import gpsUtil.location.Location;
-import gpsUtil.location.VisitedLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -28,31 +25,61 @@ public class UserService {
     }
 
     public ClosestsAttractionsDTO getClosestAttractionsDTO(String userName) {
-        Location userLocation = getUserLocation(getUser(userName)).location;
+        PositionDTO userLocation = getUserLocation(getUser(userName)).location;
         ClosestsAttractionsDTO closestsAttractionsDTO = new ClosestsAttractionsDTO();
 
         closestsAttractionsDTO.setAttractionDTOList(consumerService.getAttractions().stream()
-                .sorted(Comparator.comparingDouble(a -> getDistance(userLocation, new Location(a.getLatitude(), a.getLongitude()))))
+                .sorted(Comparator.comparingDouble(a -> getDistance(userLocation, new PositionDTO(a.getLatitude(), a.getLongitude()))))
                 .limit(5).collect(Collectors.toList()));
-        closestsAttractionsDTO.getAttractionDTOList().parallelStream().forEach(attractionDTO -> attractionDTO.setDistance(getDistance(userLocation, new Location(attractionDTO.getLatitude(), attractionDTO.getLongitude()))));
-        closestsAttractionsDTO.setUserPosition(consumerService.getUserLocation(getUser(userName)));
+        closestsAttractionsDTO.getAttractionDTOList().parallelStream().forEach(attractionDTO -> {
+            attractionDTO.setDistance(getDistance(userLocation, new PositionDTO(attractionDTO.getLatitude(), attractionDTO.getLongitude())));
+            attractionDTO.setRewards(consumerService.getRewardPoints(attractionDTO.getAttractionId(),getUser(userName).getUserId()));
+        });
+
+        closestsAttractionsDTO.setUserPosition(new PositionDTO(userLocation.getLatitude(),userLocation.getLongitude()));
 
         return closestsAttractionsDTO;
     }
 
-    public VisitedLocation getUserLocation(User user) {
-        return user.getVisitedLocations().get(user.getVisitedLocations().size()-1);
+    public VisitedLocationDTO getUserLocation(User user) {
+        if (!user.getVisitedLocations().isEmpty())
+            return user.getVisitedLocations().get(user.getVisitedLocations().size()-1);
+        else{
+            VisitedLocationDTO visitedLocationDTO = consumerService.getUserLocation(user);
+            PositionDTO currentPosition = new PositionDTO(visitedLocationDTO.location.getLatitude(),visitedLocationDTO.location.getLongitude());
+            return new VisitedLocationDTO(user.getUserId(),new PositionDTO(currentPosition.getLatitude(),currentPosition.getLongitude()),new Date());
+        }
+    }
+
+    public void calculateRewards(User user) {
+        List<VisitedLocationDTO> userLocations = user.getVisitedLocations();
+        List<AttractionDTO> attractions = consumerService.getAttractions();
+
+        for(VisitedLocationDTO visitedLocation : userLocations) {
+            for(AttractionDTO attraction : attractions) {
+                if(user.getUserRewards().stream().filter(rewardDTO -> rewardDTO.attraction.getAttractionName().equals(attraction.getAttractionName())).count() == 0) {
+                    if(nearAttraction(visitedLocation, attraction)) {
+                        user.addUserReward(new UserRewardDTO(visitedLocation, attraction, consumerService.getRewardPoints(attraction.getAttractionId(), user.getUserId())));
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean nearAttraction(VisitedLocationDTO visitedLocation, AttractionDTO attraction) {
+        final int proximityBuffer = 10;
+        return !(getDistance(new PositionDTO(attraction.getLatitude(),attraction.getLongitude()), visitedLocation.location) > proximityBuffer);
     }
 
     public User getUser(String userName) {
         return internalUserMap.get(userName);
     }
 
-    private double getDistance(Location loc1, Location loc2) {
-        double lat1 = Math.toRadians(loc1.latitude);
-        double lon1 = Math.toRadians(loc1.longitude);
-        double lat2 = Math.toRadians(loc2.latitude);
-        double lon2 = Math.toRadians(loc2.longitude);
+    private double getDistance(PositionDTO loc1, PositionDTO loc2) {
+        double lat1 = Math.toRadians(loc1.getLatitude());
+        double lon1 = Math.toRadians(loc1.getLongitude());
+        double lat2 = Math.toRadians(loc2.getLatitude());
+        double lon2 = Math.toRadians(loc2.getLongitude());
 
         double angle = Math.acos(Math.sin(lat1) * Math.sin(lat2)
                 + Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon1 - lon2));
@@ -60,6 +87,12 @@ public class UserService {
         double nauticalMiles = 60 * Math.toDegrees(angle);
         return STATUTE_MILES_PER_NAUTICAL_MILE * nauticalMiles;
 
+    }
+
+    public List<UsersPositionsDTO> getAllCurrentLocation() {
+        List<UsersPositionsDTO> usersPositionsDTO = new ArrayList<>();
+        internalUserMap.entrySet().parallelStream().forEach(internalUser -> usersPositionsDTO.add(new UsersPositionsDTO(internalUser.getValue().getUserId(), getUserLocation(internalUser.getValue()))));
+        return usersPositionsDTO;
     }
 
     /**********************************************************************************
@@ -85,7 +118,7 @@ public class UserService {
 
     private void generateUserLocationHistory(User user) {
         IntStream.range(0, 3).forEach(i-> {
-            user.addToVisitedLocations(new VisitedLocation(user.getUserId(), new Location(generateRandomLatitude(), generateRandomLongitude()), getRandomTime()));
+            user.addToVisitedLocations(new VisitedLocationDTO(user.getUserId(), new PositionDTO(generateRandomLatitude(), generateRandomLongitude()), getRandomTime()));
         });
     }
 
@@ -105,6 +138,7 @@ public class UserService {
         LocalDateTime localDateTime = LocalDateTime.now().minusDays(new Random().nextInt(30));
         return Date.from(localDateTime.toInstant(ZoneOffset.UTC));
     }
+
 
 
 }

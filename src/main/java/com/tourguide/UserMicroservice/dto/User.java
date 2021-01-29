@@ -1,6 +1,5 @@
 package com.tourguide.UserMicroservice.dto;
 
-import gpsUtil.location.VisitedLocation;
 import tripPricer.Provider;
 
 import java.util.ArrayList;
@@ -14,8 +13,8 @@ public class User {
 	private String phoneNumber;
 	private String emailAddress;
 	private Date latestLocationTimestamp;
-	private List<VisitedLocation> visitedLocations = new ArrayList<>();
-	//private List<UserReward> userRewards = new ArrayList<>();
+	private List<VisitedLocationDTO> visitedLocations = new ArrayList<>();
+	private List<UserRewardDTO> userRewards = new ArrayList<>();
 	private UserPreferences userPreferences = new UserPreferences();
 	private List<Provider> tripDeals = new ArrayList<>();
 
@@ -58,11 +57,11 @@ public class User {
 		return latestLocationTimestamp;
 	}
 	
-	public void addToVisitedLocations(VisitedLocation visitedLocation) {
+	public void addToVisitedLocations(VisitedLocationDTO visitedLocation) {
 		visitedLocations.add(visitedLocation);
 	}
 	
-	public List<VisitedLocation> getVisitedLocations() {
+	public List<VisitedLocationDTO> getVisitedLocations() {
 		return visitedLocations;
 	}
 	
@@ -70,15 +69,15 @@ public class User {
 		visitedLocations.clear();
 	}
 	
-	/*public void addUserReward(UserReward userReward) {
-		if(userRewards.stream().filter(r -> !r.attraction.attractionName.equals(userReward.attraction)).count() == 0) {
+	public void addUserReward(UserRewardDTO userReward) {
+		if(userRewards.stream().filter(r -> !r.attraction.getAttractionName().equals(userReward.attraction)).count() == 0) {
 			userRewards.add(userReward);
 		}
 	}
 	
-	/*public List<UserReward> getUserRewards() {
+	public List<UserRewardDTO> getUserRewards() {
 		return userRewards;
-	}*/
+	}
 	
 	public UserPreferences getUserPreferences() {
 		return userPreferences;
@@ -88,7 +87,7 @@ public class User {
 		this.userPreferences = userPreferences;
 	}
 
-	public VisitedLocation getLastVisitedLocation() {
+	public VisitedLocationDTO getLastVisitedLocation() {
 		return visitedLocations.get(visitedLocations.size() - 1);
 	}
 	

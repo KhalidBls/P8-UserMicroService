@@ -8,6 +8,11 @@ public class PositionDTO {
     public PositionDTO(){
     }
 
+    public PositionDTO(double latitude, double longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
     public double getLatitude() {
         return latitude;
     }

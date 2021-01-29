@@ -1,6 +1,5 @@
 package com.tourguide.UserMicroservice.dto;
 
-import gpsUtil.location.VisitedLocation;
 
 import java.util.ArrayList;
 import java.util.List;
