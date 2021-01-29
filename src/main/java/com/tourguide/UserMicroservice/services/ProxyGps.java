@@ -15,7 +15,7 @@ import java.util.UUID;
 
 
 @Service
-public class ConsumerService {
+public class ProxyGps {
 
     public List<AttractionDTO> getAttractions() {
         RestTemplate restTemplate = new RestTemplate();
@@ -31,9 +31,4 @@ public class ConsumerService {
                 .getForObject("http://localhost:8081/getLocation?userId=" + user.getUserId(), VisitedLocationDTO.class);
     }
 
-    public int getRewardPoints(UUID attractionId, UUID userId) {
-        RestTemplate restTemplate = new RestTemplate();
-        return restTemplate
-                .getForObject("http://localhost:8082/getRewardPoints?attractionId=" + attractionId + "&userId="+userId , Integer.class);
-    }
 }

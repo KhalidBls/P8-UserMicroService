@@ -17,10 +17,12 @@ public class UserService {
 
     private static final double STATUTE_MILES_PER_NAUTICAL_MILE = 1.15077945;
     private final Logger logger = LoggerFactory.getLogger(UserService.class);
-    ConsumerService consumerService;
+    ProxyGps proxyGps;
+    ProxyRewards proxyRewards;
 
     public UserService(){
-        consumerService = new ConsumerService();
+        proxyRewards = new ProxyRewards();
+        proxyGps = new ProxyGps();
         initializeInternalUsers();
     }
 
@@ -28,12 +30,12 @@ public class UserService {
         PositionDTO userLocation = getUserLocation(getUser(userName)).location;
         ClosestsAttractionsDTO closestsAttractionsDTO = new ClosestsAttractionsDTO();
 
-        closestsAttractionsDTO.setAttractionDTOList(consumerService.getAttractions().stream()
+        closestsAttractionsDTO.setAttractionDTOList(proxyGps.getAttractions().stream()
                 .sorted(Comparator.comparingDouble(a -> getDistance(userLocation, new PositionDTO(a.getLatitude(), a.getLongitude()))))
                 .limit(5).collect(Collectors.toList()));
         closestsAttractionsDTO.getAttractionDTOList().parallelStream().forEach(attractionDTO -> {
             attractionDTO.setDistance(getDistance(userLocation, new PositionDTO(attractionDTO.getLatitude(), attractionDTO.getLongitude())));
-            attractionDTO.setRewards(consumerService.getRewardPoints(attractionDTO.getAttractionId(),getUser(userName).getUserId()));
+            attractionDTO.setRewards(proxyRewards.getRewardPoints(attractionDTO.getAttractionId(),getUser(userName).getUserId()));
         });
 
         closestsAttractionsDTO.setUserPosition(new PositionDTO(userLocation.getLatitude(),userLocation.getLongitude()));
@@ -45,7 +47,7 @@ public class UserService {
         if (!user.getVisitedLocations().isEmpty())
             return user.getVisitedLocations().get(user.getVisitedLocations().size()-1);
         else{
-            VisitedLocationDTO visitedLocationDTO = consumerService.getUserLocation(user);
+            VisitedLocationDTO visitedLocationDTO = proxyGps.getUserLocation(user);
             PositionDTO currentPosition = new PositionDTO(visitedLocationDTO.location.getLatitude(),visitedLocationDTO.location.getLongitude());
             return new VisitedLocationDTO(user.getUserId(),new PositionDTO(currentPosition.getLatitude(),currentPosition.getLongitude()),new Date());
         }
@@ -53,13 +55,13 @@ public class UserService {
 
     public void calculateRewards(User user) {
         List<VisitedLocationDTO> userLocations = user.getVisitedLocations();
-        List<AttractionDTO> attractions = consumerService.getAttractions();
+        List<AttractionDTO> attractions = proxyGps.getAttractions();
 
         for(VisitedLocationDTO visitedLocation : userLocations) {
             for(AttractionDTO attraction : attractions) {
                 if(user.getUserRewards().stream().filter(rewardDTO -> rewardDTO.attraction.getAttractionName().equals(attraction.getAttractionName())).count() == 0) {
                     if(nearAttraction(visitedLocation, attraction)) {
-                        user.addUserReward(new UserRewardDTO(visitedLocation, attraction, consumerService.getRewardPoints(attraction.getAttractionId(), user.getUserId())));
+                        user.addUserReward(new UserRewardDTO(visitedLocation, attraction, proxyRewards.getRewardPoints(attraction.getAttractionId(), user.getUserId())));
                     }
                 }
             }
