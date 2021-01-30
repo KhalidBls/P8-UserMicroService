@@ -88,7 +88,6 @@ public class UserService {
 
         double nauticalMiles = 60 * Math.toDegrees(angle);
         return STATUTE_MILES_PER_NAUTICAL_MILE * nauticalMiles;
-
     }
 
     public List<UsersPositionsDTO> getAllCurrentLocation() {

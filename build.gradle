@@ -15,12 +15,22 @@ repositories {
 	}
 }
 
+ext {
+	set('springCloudVersion', "2020.0.0")
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
+	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-server'
 	compile group: 'org.javamoney', name: 'moneta', version: '1.3'
 	compile(name:'TripPricer', ext:'jar')
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
 }
 
 test {
