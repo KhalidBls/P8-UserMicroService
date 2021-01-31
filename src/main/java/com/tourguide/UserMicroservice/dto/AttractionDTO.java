@@ -14,6 +14,17 @@ public class AttractionDTO {
 
     public AttractionDTO(){ }
 
+    public AttractionDTO(String attractionName, String city, String state, double longitude, double latitude) {
+        this.attractionName = attractionName;
+        this.city = city;
+        this.state = state;
+        this.attractionId = attractionId;
+        this.longitude = longitude;
+        this.latitude = latitude;
+        this.distance = distance;
+        this.rewards = rewards;
+    }
+
     public double getDistance() {
         return distance;
     }

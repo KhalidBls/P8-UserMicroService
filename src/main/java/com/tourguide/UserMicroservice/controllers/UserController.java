@@ -1,12 +1,14 @@
 package com.tourguide.UserMicroservice.controllers;
 
 import com.tourguide.UserMicroservice.dto.ClosestsAttractionsDTO;
+import com.tourguide.UserMicroservice.dto.UserRewardDTO;
 import com.tourguide.UserMicroservice.dto.UsersPositionsDTO;
 import com.tourguide.UserMicroservice.dto.VisitedLocationDTO;
 import com.tourguide.UserMicroservice.services.UserService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import tripPricer.Provider;
 
 import java.util.List;
 
@@ -18,7 +20,7 @@ public class UserController {
 
     @GetMapping("/closestAttractions")
     public ClosestsAttractionsDTO getClosestAttractions(@RequestParam String userName){
-        return userService.getClosestAttractionsDTO(userName);
+        return userService.getClosestAttractionsDTO(userService.getUser(userName));
     }
 
     @GetMapping("/getLocation")
@@ -32,19 +34,13 @@ public class UserController {
     }
 
     @GetMapping("/getRewards")
-    public void getUserRewards(@RequestParam String userName){
-        /*
-        -	 Prend en paramètre un nom d’utilisateur
-        -	Retourne la liste des attractions visiter par l’utilisateur avec la position de l’attraction et les points que l’utilisateur a gagné en la visitant
-         */
+    public List<UserRewardDTO> getUserRewards(@RequestParam String userName){
+        return userService.getUserRewards(userService.getUser(userName));
     }
 
     @GetMapping("/getTripDeals")
-    public void getTripDeals(@RequestParam String userName){
-        /*
-        -	Prend en paramètre un nom d’utilisateur
-        -	Retourne l’objet User concerné avec son id, son username, numéro de téléphone, son adresse, ses points etc…
-         */
+    public List<Provider> getTripDeals(@RequestParam String userName){
+       return userService.getTripDeals(userService.getUser(userName));
     }
     
 }
