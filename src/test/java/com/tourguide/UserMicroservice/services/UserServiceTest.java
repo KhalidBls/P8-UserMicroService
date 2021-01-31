@@ -44,7 +44,7 @@ public class UserServiceTest {
 
         lenient().when(proxyRewards.getRewardPoints(any(UUID.class),any(UUID.class))).thenReturn(8);
         lenient().when(proxyGps.getAttractions()).thenReturn(attractionMock);
-        lenient().when(proxyGps.getUserLocation(any(User.class))).thenReturn(new VisitedLocationDTO(UUID.fromString("211468fa-b61f-4f9d-999f-fb17a2896633"),new PositionDTO(33.81,-117.9),new Date()));
+        lenient().when(proxyGps.getLocation(any(UUID.class))).thenReturn(new VisitedLocationDTO(UUID.fromString("211468fa-b61f-4f9d-999f-fb17a2896633"),new PositionDTO(33.81,-117.9),new Date()));
     }
 
     @Test

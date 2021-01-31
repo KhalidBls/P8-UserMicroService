@@ -12,6 +12,6 @@ import java.util.UUID;
 public interface ProxyRewards {
 
     @GetMapping("/getRewardPoints")
-    public int getRewardPoints(@RequestParam UUID attractionId, @RequestParam UUID userId);
+    int getRewardPoints(@RequestParam UUID attractionId, @RequestParam UUID userId);
 
 }
