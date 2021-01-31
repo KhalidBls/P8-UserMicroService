@@ -8,10 +8,13 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.UUID;
 
-@FeignClient(name="reward-microservice",url = "localhost:8082")
-public interface ProxyRewards {
+@Service
+public class ProxyRewards {
 
-    @GetMapping("/getRewardPoints")
-    int getRewardPoints(@RequestParam UUID attractionId, @RequestParam UUID userId);
+    public Integer getRewardPoints(UUID attractionId, UUID userId) {
+        RestTemplate restTemplate = new RestTemplate();
+        return restTemplate
+                .getForObject("http://localhost:8082/getRewardPoints?attractionId=" + attractionId + "&userId="+userId , Integer.class);
+    }
 
 }

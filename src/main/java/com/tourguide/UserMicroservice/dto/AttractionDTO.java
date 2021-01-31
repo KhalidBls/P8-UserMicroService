@@ -10,7 +10,7 @@ public class AttractionDTO {
     private double longitude;
     private double latitude;
     private double distance;
-    private int rewards;
+    private Integer rewards;
 
     public AttractionDTO(){ }
 
@@ -78,11 +78,11 @@ public class AttractionDTO {
         this.distance = distance;
     }
 
-    public int getRewards() {
+    public Integer getRewards() {
         return rewards;
     }
 
-    public void setRewards(int rewards) {
+    public void setRewards(Integer rewards) {
         this.rewards = rewards;
     }
 }

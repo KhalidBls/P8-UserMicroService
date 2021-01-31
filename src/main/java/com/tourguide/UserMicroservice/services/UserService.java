@@ -23,12 +23,12 @@ public class UserService {
     private static final double STATUTE_MILES_PER_NAUTICAL_MILE = 1.15077945;
     private final Logger logger = LoggerFactory.getLogger(UserService.class);
     private final TripPricer tripPricer = new TripPricer();
-    @Autowired
     private ProxyGps proxyGps;
-    @Autowired
     private ProxyRewards proxyRewards;
 
     public UserService(){
+        proxyGps = new ProxyGps();
+        proxyRewards = new ProxyRewards();
         initializeInternalUsers();
     }
 
@@ -53,7 +53,7 @@ public class UserService {
         if (!user.getVisitedLocations().isEmpty())
             return user.getVisitedLocations().get(user.getVisitedLocations().size()-1);
         else{
-            VisitedLocationDTO visitedLocationDTO = proxyGps.getLocation(user.getUserId());
+            VisitedLocationDTO visitedLocationDTO = proxyGps.getUserLocation(user.getUserId());
             PositionDTO currentPosition = new PositionDTO(visitedLocationDTO.location.getLatitude(),visitedLocationDTO.location.getLongitude());
             return new VisitedLocationDTO(user.getUserId(),new PositionDTO(currentPosition.getLatitude(),currentPosition.getLongitude()),new Date());
         }
