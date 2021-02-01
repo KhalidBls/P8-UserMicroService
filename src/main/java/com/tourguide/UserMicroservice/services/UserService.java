@@ -28,6 +28,10 @@ public class UserService {
     private ProxyGps proxyGps;
     private ProxyRewards proxyRewards;
 
+    public Tracker getTracker() {
+        return tracker;
+    }
+
     public UserService(){
         tracker = new Tracker(this);
         proxyGps = new ProxyGps();
@@ -84,6 +88,11 @@ public class UserService {
                 }
             }
         }
+    }
+
+    public void trackUserLocation(User user){
+        getUserLocation(user);
+        calculateRewards(user);
     }
 
     private boolean nearAttraction(VisitedLocationDTO visitedLocation, AttractionDTO attraction) {

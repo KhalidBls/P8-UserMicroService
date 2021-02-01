@@ -15,15 +15,12 @@ import java.util.stream.IntStream;
 
 public class Tracker extends Thread{
     private Logger logger = LoggerFactory.getLogger(Tracker.class);
-    private static final long trackingPollingInterval = TimeUnit.MINUTES.toSeconds(5);
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    //private final TourGuideService tourGuideService;
+    private final ExecutorService executorService = Executors.newFixedThreadPool(3000);
     private final UserService userService;
     private boolean stop = false;
 
     public Tracker(UserService userService) {
         this.userService = userService;
-
         executorService.submit(this);
     }
 
@@ -38,5 +35,11 @@ public class Tracker extends Thread{
     @Override
     public void run() {
 
+        while (!stop){
+            userService.getAllUsers().forEach(user ->{
+                userService.trackUserLocation(user);
+            });
+
+        }
     }
 }

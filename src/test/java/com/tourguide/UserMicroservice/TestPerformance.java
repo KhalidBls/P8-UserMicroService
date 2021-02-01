@@ -1,31 +1,44 @@
-package com.tourguide.UserMicroservice.services;
+package com.tourguide.UserMicroservice;
 
-import com.tourguide.UserMicroservice.dto.*;
+import com.tourguide.UserMicroservice.dto.AttractionDTO;
+import com.tourguide.UserMicroservice.dto.PositionDTO;
+import com.tourguide.UserMicroservice.dto.User;
+import com.tourguide.UserMicroservice.dto.VisitedLocationDTO;
+import com.tourguide.UserMicroservice.helper.InternalTestHelper;
 import com.tourguide.UserMicroservice.proxies.ProxyGps;
 import com.tourguide.UserMicroservice.proxies.ProxyRewards;
-import org.junit.jupiter.api.Assertions;
+import com.tourguide.UserMicroservice.services.UserService;
+import org.apache.commons.lang3.time.StopWatch;
+import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 
-@ExtendWith(MockitoExtension.class)
-public class UserServiceTest {
+
+@RunWith(MockitoJUnitRunner.class)
+public class TestPerformance {
+
     @Mock
     ProxyGps proxyGps;
     @Mock
     ProxyRewards proxyRewards;
-
     @InjectMocks
     UserService userService;
 
@@ -48,37 +61,22 @@ public class UserServiceTest {
     }
 
     @Test
-    public void getClosestAttractionTestShouldReturnThe5AttractionsClosest(){
-        //Given
-        User user = new User(UUID.fromString("211468fa-b61f-4f9d-999f-fb17a2896633"),"internalUser","0123456789","internal@user.com");
-        //When
-        ClosestsAttractionsDTO closestsAttractionsDTO = userService.getClosestAttractionsDTO(user);
-        //Then
-        Assertions.assertEquals(closestsAttractionsDTO.getAttractionDTOList().size(),5);
-        Assertions.assertEquals(closestsAttractionsDTO.getAttractionDTOList().get(0).getAttractionName(),"Disneyland");
-    }
+    public void highVolumeTrackLocation(){
+        // Users should be incremented up to 100,000, and test finishes within 15 minutes
+        InternalTestHelper.setInternalUserNumber(10);
+        List<User> allUsers = userService.getAllUsers();
 
-    @Test
-    public void getUserLocationShouldReturnUserPosition(){
-        //Given
-        User user = new User(UUID.fromString("211468fa-b61f-4f9d-999f-fb17a2896633"),"internalUser","0123456789","internal@user.com");
-        //When
-        VisitedLocationDTO visitedLocationDTO = userService.getUserLocation(user);
-        //Then
-        Assertions.assertEquals(visitedLocationDTO.location.getLatitude(),33.81);
-        Assertions.assertEquals(visitedLocationDTO.location.getLongitude(),-117.9);
-    }
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        IntStream.range(0, allUsers.size())
+                .forEach(index -> {
+                        userService.trackUserLocation(allUsers.get(index));
+                });
+        stopWatch.stop();
+        userService.getTracker().stopTracking();
 
-    @Test
-    public void calculateRewardShouldAddRewardToUserWhenNeverVisited(){
-        //Given
-        User user = new User(UUID.fromString("211468fa-b61f-4f9d-999f-fb17a2896633"),"internalUser","0123456789","internal@user.com");
-        user.addToVisitedLocations(new VisitedLocationDTO(UUID.fromString("211468fa-b61f-4f9d-999f-fb17a2896633"),new PositionDTO(33.817595D,-117.922008D),new Date()));
-        //When
-        Assertions.assertTrue(user.getUserRewards().size()==0);
-        userService.calculateRewards(user);
-        //Then
-        Assertions.assertTrue(user.getUserRewards().size()>0);
+        System.out.println("highVolumeTrackLocation: Time Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()) + " seconds.");
+        assertTrue(TimeUnit.MINUTES.toSeconds(15) >= TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()));
     }
 
 }
