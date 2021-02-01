@@ -4,6 +4,7 @@ import com.tourguide.UserMicroservice.dto.*;
 import com.tourguide.UserMicroservice.helper.InternalTestHelper;
 import com.tourguide.UserMicroservice.proxies.ProxyGps;
 import com.tourguide.UserMicroservice.proxies.ProxyRewards;
+import com.tourguide.UserMicroservice.trackers.Tracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,13 +24,24 @@ public class UserService {
     private static final double STATUTE_MILES_PER_NAUTICAL_MILE = 1.15077945;
     private final Logger logger = LoggerFactory.getLogger(UserService.class);
     private final TripPricer tripPricer = new TripPricer();
+    private Tracker tracker;
     private ProxyGps proxyGps;
     private ProxyRewards proxyRewards;
 
     public UserService(){
+        tracker = new Tracker(this);
         proxyGps = new ProxyGps();
         proxyRewards = new ProxyRewards();
         initializeInternalUsers();
+        addShutDownHook();
+    }
+
+    private void addShutDownHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                tracker.stopTracking();
+            }
+        });
     }
 
     public ClosestsAttractionsDTO getClosestAttractionsDTO(User user) {
@@ -89,6 +101,10 @@ public class UserService {
 
     public List<UserRewardDTO> getUserRewards(User user) {
         return user.getUserRewards();
+    }
+
+    public List<User> getAllUsers() {
+        return internalUserMap.values().stream().collect(Collectors.toList());
     }
 
     public User getUser(String userName) {
