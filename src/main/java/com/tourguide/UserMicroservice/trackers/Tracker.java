@@ -13,14 +13,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
-public class Tracker extends Thread{
+public class Tracker extends Thread {
     private Logger logger = LoggerFactory.getLogger(Tracker.class);
-    private final ExecutorService executorService = Executors.newFixedThreadPool(3000);
+    private static final long trackingPollingInterval = TimeUnit.MINUTES.toSeconds(5);
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final UserService userService;
     private boolean stop = false;
 
     public Tracker(UserService userService) {
         this.userService = userService;
+
         executorService.submit(this);
     }
 
@@ -34,12 +36,30 @@ public class Tracker extends Thread{
 
     @Override
     public void run() {
+        StopWatch stopWatch = new StopWatch();
+        while(true) {
+            if(Thread.currentThread().isInterrupted() || stop) {
+                logger.debug("Tracker stopping");
+                break;
+            }
 
-        while (!stop){
-            userService.getAllUsers().forEach(user ->{
-                userService.trackUserLocation(user);
-            });
+            List<User> users = userService.getAllUsers();
+            logger.debug("Begin Tracker. Tracking " + users.size() + " users.");
+            stopWatch.start();
+            IntStream.range(0, users.size())
+                    .forEach(index -> {
+                        userService.trackUserLocation(users.get(index));
+                    });
 
+            stopWatch.stop();
+            logger.debug("Tracker Time Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(stopWatch.getTime()) + " seconds.");
+            stopWatch.reset();
+            try {
+                logger.debug("Tracker sleeping");
+                TimeUnit.SECONDS.sleep(trackingPollingInterval);
+            } catch (InterruptedException e) {
+                break;
+            }
         }
     }
 }

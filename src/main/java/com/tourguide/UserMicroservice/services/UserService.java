@@ -7,7 +7,6 @@ import com.tourguide.UserMicroservice.proxies.ProxyRewards;
 import com.tourguide.UserMicroservice.trackers.Tracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tripPricer.Provider;
 import tripPricer.TripPricer;
@@ -28,9 +27,6 @@ public class UserService {
     private ProxyGps proxyGps;
     private ProxyRewards proxyRewards;
 
-    public Tracker getTracker() {
-        return tracker;
-    }
 
     public UserService(){
         tracker = new Tracker(this);
@@ -38,6 +34,10 @@ public class UserService {
         proxyRewards = new ProxyRewards();
         initializeInternalUsers();
         addShutDownHook();
+    }
+
+    public Tracker getTracker() {
+        return tracker;
     }
 
     private void addShutDownHook() {
@@ -91,7 +91,7 @@ public class UserService {
     }
 
     public void trackUserLocation(User user){
-        getUserLocation(user);
+        user.addToVisitedLocations(proxyGps.getUserLocation(user.getUserId()));
         calculateRewards(user);
     }
 
