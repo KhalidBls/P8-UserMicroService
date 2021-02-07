@@ -4,9 +4,11 @@ import java.util.Date;
 import java.util.UUID;
 
 public class VisitedLocationDTO {
-    public final UUID userId;
-    public final PositionDTO location;
-    public final Date timeVisited;
+    public  UUID userId;
+    public  PositionDTO location;
+    public  Date timeVisited;
+
+    public VisitedLocationDTO(){}
 
     public VisitedLocationDTO(UUID userId, PositionDTO location, Date timeVisited) {
         this.userId = userId;

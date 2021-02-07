@@ -14,6 +14,7 @@ import tripPricer.TripPricer;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -83,7 +84,14 @@ public class UserService {
             for(AttractionDTO attraction : attractions) {
                 if(user.getUserRewards().stream().filter(rewardDTO -> rewardDTO.attraction.getAttractionName().equals(attraction.getAttractionName())).count() == 0) {
                     if(nearAttraction(visitedLocation, attraction)) {
-                        user.addUserReward(new UserRewardDTO(visitedLocation, attraction, proxyRewards.getRewardPoints(attraction.getAttractionId(), user.getUserId())));
+                        if(attraction.getRewards() == null) {                                                                               //POUR EVITER DE SURCHARGER LA VARIABLE ET RESTER COHERENT
+                            int attractionPoint = proxyRewards.getRewardPoints(attraction.getAttractionId(), user.getUserId());
+                            attraction.setRewards(attractionPoint);
+                        }
+                        if(attraction.getDistance() ==0) {                                                                                  //POUR EVITER DE SURCHARGER LA VARIABLE ET RESTER COHERENT
+                            attraction.setDistance(getDistance(getUserLocation(user).location,new PositionDTO(attraction.getLatitude(),attraction.getLongitude())));
+                        }
+                        user.addUserReward(new UserRewardDTO(visitedLocation, attraction, attraction.getRewards()));
                     }
                 }
             }
@@ -91,8 +99,17 @@ public class UserService {
     }
 
     public void trackUserLocation(User user){
-        user.addToVisitedLocations(proxyGps.getUserLocation(user.getUserId()));
-        calculateRewards(user);
+        CompletableFuture<VisitedLocationDTO> future = new CompletableFuture<>();
+        launchThreads(future,user);
+        future.complete(proxyGps.getUserLocation(user.getUserId()));
+    }
+
+    public void launchThreads(CompletableFuture<VisitedLocationDTO> future,User user){
+        new Thread(() -> {
+                VisitedLocationDTO visitedLocation = future.join();
+                user.addToVisitedLocations(visitedLocation);
+                calculateRewards(user);
+        }).start();
     }
 
     private boolean nearAttraction(VisitedLocationDTO visitedLocation, AttractionDTO attraction) {

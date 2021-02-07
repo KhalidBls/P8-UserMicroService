@@ -15,7 +15,7 @@ import java.util.stream.IntStream;
 
 public class Tracker extends Thread {
     private Logger logger = LoggerFactory.getLogger(Tracker.class);
-    private static final long trackingPollingInterval = TimeUnit.MINUTES.toSeconds(5);
+    private static final long trackingPollingInterval = TimeUnit.MINUTES.toSeconds(1);
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final UserService userService;
     private boolean stop = false;
