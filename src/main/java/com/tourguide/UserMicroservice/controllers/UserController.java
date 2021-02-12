@@ -7,6 +7,7 @@ import com.tourguide.UserMicroservice.dto.VisitedLocationDTO;
 import com.tourguide.UserMicroservice.services.UserService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import tripPricer.Provider;
@@ -42,6 +43,11 @@ public class UserController {
     @GetMapping(value ="/getTripDeals",produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Provider> getTripDeals(@RequestParam String userName){
        return userService.getTripDeals(userService.getUser(userName));
+    }
+
+    @PutMapping(value ="/trackUserLocation",produces = MediaType.APPLICATION_JSON_VALUE)
+    public void trackUserLocation(@RequestParam String userName){
+        userService.trackUserLocation(userService.getUser(userName));
     }
     
 }

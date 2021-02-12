@@ -14,7 +14,7 @@ public class AttractionDTO {
 
     public AttractionDTO(){ }
 
-    public AttractionDTO(String attractionName, String city, String state, double longitude, double latitude) {
+    public AttractionDTO(String attractionName, String city, String state, double latitude, double longitude) {
         this.attractionName = attractionName;
         this.city = city;
         this.state = state;

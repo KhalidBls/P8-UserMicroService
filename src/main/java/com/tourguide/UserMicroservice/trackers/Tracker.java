@@ -43,6 +43,7 @@ public class Tracker extends Thread {
                 break;
             }
 
+            userService.updateAttractionsList();
             List<User> users = userService.getAllUsers();
             logger.debug("Begin Tracker. Tracking " + users.size() + " users.");
             stopWatch.start();
