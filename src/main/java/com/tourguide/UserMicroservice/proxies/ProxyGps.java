@@ -1,13 +1,14 @@
-package com.tourguide.UserMicroservice.services;
+package com.tourguide.UserMicroservice.proxies;
 
 import com.tourguide.UserMicroservice.dto.AttractionDTO;
-import com.tourguide.UserMicroservice.dto.PositionDTO;
-import com.tourguide.UserMicroservice.dto.User;
 import com.tourguide.UserMicroservice.dto.VisitedLocationDTO;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -25,10 +26,10 @@ public class ProxyGps {
         return responseEntity.getBody();
     }
 
-    public VisitedLocationDTO getUserLocation(User user) {
+    public VisitedLocationDTO getUserLocation(UUID userId) {
         RestTemplate restTemplate = new RestTemplate();
         return restTemplate
-                .getForObject("http://localhost:8081/getLocation?userId=" + user.getUserId(), VisitedLocationDTO.class);
+                .getForObject("http://localhost:8081/getLocation?userId=" + userId, VisitedLocationDTO.class);
     }
 
 }

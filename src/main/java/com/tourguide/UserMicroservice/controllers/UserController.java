@@ -1,12 +1,16 @@
 package com.tourguide.UserMicroservice.controllers;
 
 import com.tourguide.UserMicroservice.dto.ClosestsAttractionsDTO;
+import com.tourguide.UserMicroservice.dto.UserRewardDTO;
 import com.tourguide.UserMicroservice.dto.UsersPositionsDTO;
 import com.tourguide.UserMicroservice.dto.VisitedLocationDTO;
 import com.tourguide.UserMicroservice.services.UserService;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import tripPricer.Provider;
 
 import java.util.List;
 
@@ -16,35 +20,34 @@ public class UserController {
 
     UserService userService = new UserService();
 
-    @GetMapping("/closestAttractions")
+    @GetMapping(value="/closestAttractions",produces = MediaType.APPLICATION_JSON_VALUE)
     public ClosestsAttractionsDTO getClosestAttractions(@RequestParam String userName){
-        return userService.getClosestAttractionsDTO(userName);
+        return userService.getClosestAttractionsDTO(userService.getUser(userName));
     }
 
-    @GetMapping("/getLocation")
+    @GetMapping(value="/getLocation",produces = MediaType.APPLICATION_JSON_VALUE)
     public VisitedLocationDTO getUserLocation(@RequestParam String userName){
         return userService.getUserLocation(userService.getUser(userName));
     }
 
-    @GetMapping("/getAllCurrentLocation")
+    @GetMapping(value = "/getAllCurrentLocation",produces = MediaType.APPLICATION_JSON_VALUE)
     public List<UsersPositionsDTO> getAllCurrentLocation(){
         return userService.getAllCurrentLocation();
     }
 
-    @GetMapping("/getRewards")
-    public void getUserRewards(@RequestParam String userName){
-        /*
-        -	 Prend en paramètre un nom d’utilisateur
-        -	Retourne la liste des attractions visiter par l’utilisateur avec la position de l’attraction et les points que l’utilisateur a gagné en la visitant
-         */
+    @GetMapping(value="/getRewards",produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<UserRewardDTO> getUserRewards(@RequestParam String userName){
+        return userService.getUserRewards(userService.getUser(userName));
     }
 
-    @GetMapping("/getTripDeals")
-    public void getTripDeals(@RequestParam String userName){
-        /*
-        -	Prend en paramètre un nom d’utilisateur
-        -	Retourne l’objet User concerné avec son id, son username, numéro de téléphone, son adresse, ses points etc…
-         */
+    @GetMapping(value ="/getTripDeals",produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<Provider> getTripDeals(@RequestParam String userName){
+       return userService.getTripDeals(userService.getUser(userName));
+    }
+
+    @PutMapping(value ="/trackUserLocation",produces = MediaType.APPLICATION_JSON_VALUE)
+    public void trackUserLocation(@RequestParam String userName){
+        userService.trackUserLocation(userService.getUser(userName));
     }
     
 }

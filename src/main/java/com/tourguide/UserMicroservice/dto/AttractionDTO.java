@@ -3,31 +3,23 @@ package com.tourguide.UserMicroservice.dto;
 import java.util.UUID;
 
 public class AttractionDTO {
-    private String attractionName;
-    private String city;
-    private String state;
-    private UUID attractionId;
+    public  String attractionName;
+    public  String city;
+    public  String state;
+    public  UUID attractionId;
     private double longitude;
     private double latitude;
     private double distance;
-    private int rewards;
+    private Integer rewards;
 
     public AttractionDTO(){ }
 
-    public double getDistance() {
-        return distance;
-    }
-
-    public void setDistance(double distance) {
-        this.distance = distance;
-    }
-
-    public int getRewards() {
-        return rewards;
-    }
-
-    public void setRewards(int rewards) {
-        this.rewards = rewards;
+    public AttractionDTO(String attractionName, String city, String state, double latitude, double longitude) {
+        this.attractionName = attractionName;
+        this.city = city;
+        this.state = state;
+        this.longitude = longitude;
+        this.latitude = latitude;
     }
 
     public String getAttractionName() {
@@ -76,5 +68,21 @@ public class AttractionDTO {
 
     public void setLatitude(double latitude) {
         this.latitude = latitude;
+    }
+
+    public double getDistance() {
+        return distance;
+    }
+
+    public void setDistance(double distance) {
+        this.distance = distance;
+    }
+
+    public Integer getRewards() {
+        return rewards;
+    }
+
+    public void setRewards(Integer rewards) {
+        this.rewards = rewards;
     }
 }
