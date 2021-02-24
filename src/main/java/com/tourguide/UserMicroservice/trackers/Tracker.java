@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -15,7 +14,7 @@ import java.util.stream.IntStream;
 
 public class Tracker extends Thread {
     private Logger logger = LoggerFactory.getLogger(Tracker.class);
-    private static final long trackingPollingInterval = TimeUnit.MINUTES.toSeconds(1);
+    private static final long trackingPollingInterval = TimeUnit.MINUTES.toSeconds(100);
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final UserService userService;
     private boolean stop = false;
@@ -43,7 +42,6 @@ public class Tracker extends Thread {
                 break;
             }
 
-            userService.updateAttractionsList();
             List<User> users = userService.getAllUsers();
             logger.debug("Begin Tracker. Tracking " + users.size() + " users.");
             stopWatch.start();

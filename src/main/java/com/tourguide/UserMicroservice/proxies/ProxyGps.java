@@ -21,7 +21,7 @@ public class ProxyGps {
     public List<AttractionDTO> getAttractions() {
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<List<AttractionDTO>> responseEntity =
-                restTemplate.exchange("http://localhost:8081/getAttractions", HttpMethod.GET, null, new ParameterizedTypeReference<List<AttractionDTO>>() {
+                restTemplate.exchange("http://gps:9091/getAttractions", HttpMethod.GET, null, new ParameterizedTypeReference<List<AttractionDTO>>() {
                 });
         return responseEntity.getBody();
     }
@@ -29,7 +29,7 @@ public class ProxyGps {
     public VisitedLocationDTO getUserLocation(UUID userId) {
         RestTemplate restTemplate = new RestTemplate();
         return restTemplate
-                .getForObject("http://localhost:8081/getLocation?userId=" + userId, VisitedLocationDTO.class);
+                .getForObject("http://gps:9091/getLocation?userId=" + userId, VisitedLocationDTO.class);
     }
 
 }
