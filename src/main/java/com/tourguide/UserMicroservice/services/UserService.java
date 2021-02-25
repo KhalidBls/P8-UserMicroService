@@ -7,7 +7,6 @@ import com.tourguide.UserMicroservice.proxies.ProxyRewards;
 import com.tourguide.UserMicroservice.trackers.Tracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import tripPricer.Provider;
 import tripPricer.TripPricer;
@@ -28,14 +27,20 @@ public class UserService {
     private Tracker tracker;
     private ProxyGps proxyGps;
     private ProxyRewards proxyRewards;
+    private List<AttractionDTO> attractionsList = new ArrayList<>();
 
 
     public UserService(){
         proxyGps = new ProxyGps();
         proxyRewards = new ProxyRewards();
+        updateAttractions();
         tracker = new Tracker(this);
         initializeInternalUsers();
         addShutDownHook();
+    }
+
+    public void updateAttractions(){
+        attractionsList = proxyGps.getAttractions();
     }
 
     public Tracker getTracker() {
@@ -79,7 +84,7 @@ public class UserService {
 
     public void calculateRewards(User user) {
         CompletableFuture.supplyAsync(() -> {
-            List<AttractionDTO> list = proxyGps.getAttractions();
+            List<AttractionDTO> list = attractionsList;
             return list;
         }).thenAccept(list ->{
             List<VisitedLocationDTO> userLocations = user.getVisitedLocations();

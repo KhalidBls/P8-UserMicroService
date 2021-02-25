@@ -59,6 +59,7 @@ public class Tracker extends Thread {
             } catch (InterruptedException e) {
                 break;
             }
+            userService.updateAttractions();
         }
     }
 }

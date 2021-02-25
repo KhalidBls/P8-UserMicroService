@@ -56,7 +56,7 @@ public class TestPerformance {
     @Test
     public void highVolumeGetRewards() {
         // Users should be incremented up to 100,000, and test finishes within 20 minutes
-        InternalTestHelper.setInternalUserNumber(1);
+        InternalTestHelper.setInternalUserNumber(1000);
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         userService = new UserService();
@@ -70,6 +70,15 @@ public class TestPerformance {
             userService.calculateRewards(u);
         });
 
+        allUsers.forEach(u -> {
+            while (u.getUserRewards().isEmpty()){
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
         stopWatch.stop();
         userService.getTracker().stopTracking();
