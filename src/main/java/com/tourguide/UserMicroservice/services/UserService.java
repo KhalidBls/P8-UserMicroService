@@ -24,19 +24,23 @@ public class UserService {
     private static final double STATUTE_MILES_PER_NAUTICAL_MILE = 1.15077945;
     private final Logger logger = LoggerFactory.getLogger(UserService.class);
     private final TripPricer tripPricer = new TripPricer();
-    private List <AttractionDTO> attractionsList = new ArrayList<>();
     private Tracker tracker;
     private ProxyGps proxyGps;
     private ProxyRewards proxyRewards;
+    private List<AttractionDTO> attractionsList = new ArrayList<>();
 
 
     public UserService(){
         proxyGps = new ProxyGps();
         proxyRewards = new ProxyRewards();
-        updateAttractionsList();
+        updateAttractions();
         tracker = new Tracker(this);
         initializeInternalUsers();
         addShutDownHook();
+    }
+
+    public void updateAttractions(){
+        attractionsList = proxyGps.getAttractions();
     }
 
     public Tracker getTracker() {
@@ -55,7 +59,7 @@ public class UserService {
         PositionDTO userLocation = getUserLocation(user).location;
         ClosestsAttractionsDTO closestsAttractionsDTO = new ClosestsAttractionsDTO();
 
-        closestsAttractionsDTO.setAttractionDTOList(attractionsList.stream()
+        closestsAttractionsDTO.setAttractionDTOList(proxyGps.getAttractions().stream()
                 .sorted(Comparator.comparingDouble(a -> getDistance(userLocation, new PositionDTO(a.getLatitude(), a.getLongitude()))))
                 .limit(5).collect(Collectors.toList()));
         closestsAttractionsDTO.getAttractionDTOList().parallelStream().forEach(attractionDTO -> {
@@ -78,12 +82,14 @@ public class UserService {
         }
     }
 
-
     public void calculateRewards(User user) {
-        List<VisitedLocationDTO> userLocations = user.getVisitedLocations();
-
+        CompletableFuture.supplyAsync(() -> {
+            List<AttractionDTO> list = attractionsList;
+            return list;
+        }).thenAccept(list ->{
+            List<VisitedLocationDTO> userLocations = user.getVisitedLocations();
         for(VisitedLocationDTO visitedLocation : userLocations) {
-            for(AttractionDTO attraction : attractionsList) {
+            for(AttractionDTO attraction : list) {
                 if(user.getUserRewards().stream().filter(rewardDTO -> rewardDTO.attraction.getAttractionName().equals(attraction.getAttractionName())).count() == 0) {
                     if(nearAttraction(visitedLocation, attraction)) {
                         if(attraction.getRewards() == null) {                                                                               //POUR EVITER DE SURCHARGER LA VARIABLE ET RESTER COHERENT
@@ -97,16 +103,14 @@ public class UserService {
                     }
                 }
             }
-        }
+        }});
     }
 
     public void trackUserLocation(User user){
         CompletableFuture.supplyAsync(() -> {
-            System.out.println("supply");
             VisitedLocationDTO visitedLocation = proxyGps.getUserLocation(user.getUserId());
             return visitedLocation;
         }).thenAccept(visitedLocation -> {
-            System.out.println("thenaccept");
             user.addToVisitedLocations(visitedLocation);
             calculateRewards(user);
         });
@@ -161,7 +165,7 @@ public class UserService {
     }
 
     public List<AttractionDTO> getAttractionsFromProxy(){
-        return attractionsList;
+        return proxyGps.getAttractions();
     }
 
     /**********************************************************************************
@@ -209,7 +213,4 @@ public class UserService {
         return Date.from(localDateTime.toInstant(ZoneOffset.UTC));
     }
 
-    public void updateAttractionsList() {
-        attractionsList = proxyGps.getAttractions();
-    }
 }

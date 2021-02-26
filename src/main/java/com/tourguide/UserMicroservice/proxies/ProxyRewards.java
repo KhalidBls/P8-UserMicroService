@@ -14,7 +14,7 @@ public class ProxyRewards {
     public Integer getRewardPoints(UUID attractionId, UUID userId) {
         RestTemplate restTemplate = new RestTemplate();
         return restTemplate
-                .getForObject("http://localhost:8082/getRewardPoints?attractionId=" + attractionId + "&userId="+userId , Integer.class);
+                .getForObject("http://localhost:9092/getRewardPoints?attractionId=" + attractionId + "&userId="+userId , Integer.class);
     }
 
 }
