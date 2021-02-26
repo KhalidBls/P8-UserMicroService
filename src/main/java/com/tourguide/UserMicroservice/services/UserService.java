@@ -108,11 +108,9 @@ public class UserService {
 
     public void trackUserLocation(User user){
         CompletableFuture.supplyAsync(() -> {
-            System.out.println("supply");
             VisitedLocationDTO visitedLocation = proxyGps.getUserLocation(user.getUserId());
             return visitedLocation;
         }).thenAccept(visitedLocation -> {
-            System.out.println("thenaccept");
             user.addToVisitedLocations(visitedLocation);
             calculateRewards(user);
         });
