@@ -4,6 +4,7 @@ plugins {
 	id 'java'
 }
 
+apply plugin: 'jacoco'
 group = 'com.tourguide'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '1.8'

@@ -24,12 +24,12 @@ public class TestPerformance {
     //  10 USERS :              7s                  0s
     //  100 USERS :             14s                 0s
     //  1000 USERS :            1min28              0s
-    //  10000 USERS :           12min68             0s
-    //100 000 USERS :           PLUS DE 50min       0s
+    //  10000 USERS :           12min58             137s
+    //100 000 USERS :           PLUS DE 50min       23min40s
     @Test
     public void highVolumeTrackLocation(){
         // Users should be incremented up to 100,000, and test finishes within 15 minutes
-        InternalTestHelper.setInternalUserNumber(1000);
+        InternalTestHelper.setInternalUserNumber(100);
         userService = new UserService();
 
         List<User> allUsers = new ArrayList<>();
@@ -40,6 +40,17 @@ public class TestPerformance {
         for(User user : allUsers) {
             userService.trackUserLocation(user);
         }
+
+        allUsers.forEach(u -> {
+            while (!(u.getVisitedLocations().size() > 3)){
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
         stopWatch.stop();
         userService.getTracker().stopTracking();
 
@@ -56,7 +67,7 @@ public class TestPerformance {
     @Test
     public void highVolumeGetRewards() {
         // Users should be incremented up to 100,000, and test finishes within 20 minutes
-        InternalTestHelper.setInternalUserNumber(1000);
+        InternalTestHelper.setInternalUserNumber(100);
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         userService = new UserService();
